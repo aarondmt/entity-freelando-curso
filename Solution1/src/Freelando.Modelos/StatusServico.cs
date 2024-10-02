@@ -6,5 +6,4 @@ public enum StatusServico
     Concluido,
     Cancelado,
     EmAndamento
-
 }

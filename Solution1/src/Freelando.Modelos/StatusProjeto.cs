@@ -3,7 +3,7 @@ public enum StatusProjeto
 {
     Disponivel,
     Pausado,
+    EmAndamento,
     Concluido,
     Cancelado
-
 }
