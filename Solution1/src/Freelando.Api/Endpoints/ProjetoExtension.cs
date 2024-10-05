@@ -1,4 +1,5 @@
 ﻿using Freelando.Api.Converters;
+using Freelando.Api.Requests;
 using Freelando.Dados;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,28 @@ public static class ProjetoExtension
         {
             var projetos = converter.EntityListToResponseList(contexto.Projetos.Include(p => p.Cliente).Include(p => p.Especialidades).ToList());
             return Results.Ok(await Task.FromResult(projetos));
+        }).WithTags("Projeto").WithOpenApi();
+
+        app.MapPost("/projeto", async ([FromServices] ProjetoConverter converter, [FromServices] FreelandoContext contexto, ProjetoRequest projetoRequest) =>
+        {
+            var projeto = converter.RequestToEntity(projetoRequest);
+            await contexto.Projetos.AddAsync(projeto);
+            await contexto.SaveChangesAsync();
+            return Results.Created($"/projeto/{projeto.Id}", projeto);
+        }).WithTags("Projeto").WithOpenApi();
+
+        app.MapPut("/projeto/{id}", async ([FromServices] ProjetoConverter converter, [FromServices] FreelandoContext contexto, Guid id, ProjetoRequest projetoRequest) =>
+        {
+            var projeto = await contexto.Projetos.FindAsync(id);
+            if (projeto is null) return Results.NotFound();
+
+            var projetoUpdated = converter.RequestToEntity(projetoRequest);
+            projeto.Titulo = projetoUpdated.Titulo;
+            projeto.Descricao = projetoUpdated.Descricao;
+            projeto.Status = projetoUpdated.Status;
+
+            await contexto.SaveChangesAsync();
+            return Results.Ok(projeto);
         }).WithTags("Projeto").WithOpenApi();
     }
 }
